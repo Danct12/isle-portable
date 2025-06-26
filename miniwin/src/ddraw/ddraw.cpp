@@ -221,6 +221,7 @@ void EnumDevice(LPD3DENUMDEVICESCALLBACK cb, void* ctx, Direct3DRMRenderer* devi
 
 HRESULT DirectDrawImpl::EnumDevices(LPD3DENUMDEVICESCALLBACK cb, void* ctx)
 {
+#ifndef ESP_PLATFORM
 	Direct3DRMSDL3GPU_EnumDevice(cb, ctx);
 #ifdef USE_OPENGLES2
 	OpenGLES2Renderer_EnumDevice(cb, ctx);
@@ -230,6 +231,7 @@ HRESULT DirectDrawImpl::EnumDevices(LPD3DENUMDEVICESCALLBACK cb, void* ctx)
 #endif
 #ifdef _WIN32
 	DirectX9Renderer_EnumDevice(cb, ctx);
+#endif
 #endif
 	Direct3DRMSoftware_EnumDevice(cb, ctx);
 
@@ -329,6 +331,11 @@ HRESULT DirectDrawImpl::CreateDevice(
 	DDSDesc.dwSize = sizeof(DDSURFACEDESC);
 	pBackBuffer->GetSurfaceDesc(&DDSDesc);
 
+#ifdef ESP_PLATFORM
+	if (SDL_memcmp(&guid, &SOFTWARE_GUID, sizeof(GUID)) == 0) {
+		DDRenderer = new Direct3DRMSoftwareRenderer(DDSDesc.dwWidth, DDSDesc.dwHeight);
+	}
+#else
 	if (SDL_memcmp(&guid, &SDL3_GPU_GUID, sizeof(GUID)) == 0) {
 		DDRenderer = Direct3DRMSDL3GPURenderer::Create(DDSDesc.dwWidth, DDSDesc.dwHeight);
 	}
@@ -350,6 +357,7 @@ HRESULT DirectDrawImpl::CreateDevice(
 	else if (SDL_memcmp(&guid, &SOFTWARE_GUID, sizeof(GUID)) == 0) {
 		DDRenderer = new Direct3DRMSoftwareRenderer(DDSDesc.dwWidth, DDSDesc.dwHeight);
 	}
+#endif
 	else {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Device GUID not recognized");
 		return E_NOINTERFACE;

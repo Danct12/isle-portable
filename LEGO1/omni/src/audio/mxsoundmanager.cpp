@@ -56,9 +56,11 @@ void MxSoundManager::Destroy(MxBool p_fromDestructor)
 
 	m_criticalSection.Enter();
 
+#ifndef ESP_PLATFORM
 	if (m_stream) {
 		SDL_DestroyAudioStream(m_stream);
 	}
+#endif
 
 	m_engine.Destroy(ma_engine_uninit);
 
@@ -100,6 +102,10 @@ MxResult MxSoundManager::Create(MxU32 p_frequencyMS, MxBool p_createThread)
 	spec.format = SDL_AUDIO_F32;
 	spec.channels = ma_engine_get_channels(m_engine);
 
+	/* Oh now there is no sound, for we all live underground. */
+#ifdef ESP_PLATFORM
+	m_stream = NULL;
+#else
 	if ((m_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &AudioStreamCallback, this)) !=
 		NULL) {
 		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_stream));
@@ -111,6 +117,7 @@ MxResult MxSoundManager::Create(MxU32 p_frequencyMS, MxBool p_createThread)
 			SDL_GetError()
 		);
 	}
+#endif
 
 	if (p_createThread) {
 		m_thread = new MxTickleThread(this, p_frequencyMS);

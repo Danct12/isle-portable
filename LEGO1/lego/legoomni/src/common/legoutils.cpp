@@ -319,8 +319,16 @@ void InvokeAction(Extra::ActionType p_actionId, const MxAtomId& p_pAtom, MxS32 p
 
 		break;
 	case Extra::ActionType::e_run: {
+		/*
+		 * No idea what this is, but it's suggested to be a leftover from
+		 * pre-alpha build of Isle.
+		 *
+		 * Eitherway, ESP-IDF does not support running external executables.
+		 */
+#ifndef ESP_PLATFORM
 		const char* args[] = {"/lego/sources/main/main.exe", "/script", p_pAtom.GetInternal(), NULL};
 		SDL_Process* process = SDL_CreateProcess(args, false);
+#endif
 	} break;
 	case Extra::ActionType::e_enable:
 		assert(p_streamId != DS_NOT_A_STREAM);

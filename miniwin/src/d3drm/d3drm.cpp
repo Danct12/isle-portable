@@ -143,6 +143,18 @@ HRESULT Direct3DRMImpl::CreateDeviceFromSurface(
 	DDSDesc.dwSize = sizeof(DDSURFACEDESC);
 	surface->GetSurfaceDesc(&DDSDesc);
 
+	/*
+	 * ESP32 doesn't have a graphics accelerator, so let's render everything
+	 * on the CPU.
+	 *
+	 * It's gonna be slow but eeeeeeh, you have better hardware to play
+	 * LEGO Island on... right..?
+	 */
+#ifdef ESP_PLATFORM
+	if (SDL_memcmp(&guid, &SOFTWARE_GUID, sizeof(GUID)) == 0) {
+		DDRenderer = new Direct3DRMSoftwareRenderer(DDSDesc.dwWidth, DDSDesc.dwHeight);
+	}
+#else
 	if (SDL_memcmp(&guid, &SDL3_GPU_GUID, sizeof(GUID)) == 0) {
 		DDRenderer = Direct3DRMSDL3GPURenderer::Create(DDSDesc.dwWidth, DDSDesc.dwHeight);
 	}
@@ -163,6 +175,7 @@ HRESULT Direct3DRMImpl::CreateDeviceFromSurface(
 	else if (SDL_memcmp(&guid, &DirectX9_GUID, sizeof(GUID)) == 0) {
 		DDRenderer = DirectX9Renderer::Create(DDSDesc.dwWidth, DDSDesc.dwHeight);
 	}
+#endif
 #endif
 	else {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Device GUID not recognized");
