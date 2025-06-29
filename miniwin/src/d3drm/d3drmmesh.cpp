@@ -234,6 +234,8 @@ HRESULT Direct3DRMMeshImpl::SetGroupQuality(D3DRMGROUPINDEX groupIndex, D3DRMREN
 	case D3DRMRENDER_UNLITFLAT:
 		MINIWIN_NOT_IMPLEMENTED();
 		break;
+	default:
+		break;
 	}
 
 	auto& group = m_groups[groupIndex];
